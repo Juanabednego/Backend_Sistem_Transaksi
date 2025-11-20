@@ -1,19 +1,21 @@
 const express = require('express');
+const cors = require('cors');
 require('dotenv').config();
-const connectDB = require('./config/db');
+const { connectDB } = require('./config/db');
 const paymentRoutes = require('./routes/payment');
 const helperRoutes = require('./routes/helper');
 const adminRoutes = require('./routes/admin');
-const { seedAccounts } = require('./utils/seeder');
+const { seedAll } = require('./utils/seeder');
 const { setupDailyReset } = require('./utils/scheduler');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Connect to database
+// Connect to database with fallback
 connectDB();
 
 // Middleware
+app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
@@ -36,7 +38,7 @@ app.get('/', (req, res) => {
 // Endpoint untuk seeding data (development only)
 app.post('/api/seed', async (req, res) => {
   try {
-    await seedAccounts();
+    await seedAll();
     res.json({ success: true, message: 'Data seeded successfully' });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
